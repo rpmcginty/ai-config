@@ -16,14 +16,15 @@ Symlinks everything into place, prunes what no longer exists, and diagnoses drif
 ## Install
 
 ```sh
-git clone <this repo> ~/workspace/ai-config
-~/workspace/ai-config/bin/sync
+git clone <this repo> anywhere/you/like
+anywhere/you/like/bin/sync
 ```
 
 That links active skills into `~/.claude/skills/` and `~/.agents/skills/`, and instruction files into `$HOME`.
 Symlinks mean edits here are live immediately and `git pull` is the whole update story.
 
-With the [zsh-custom-scripts](https://github.com/rpmcginty/zsh-custom-scripts) plugin installed, sync also runs quietly on shell startup, so a clone is all a new machine needs.
+The repo's location is not special: the first `bin/sync` run registers it in `~/.config/ai-config/home`, and everything else finds it from there (set `AI_CONFIG_HOME` to override).
+With the [zsh-custom-scripts](https://github.com/rpmcginty/zsh-custom-scripts) plugin installed, sync also runs quietly on shell startup, throttled to once per 24 hours.
 
 ## Everyday commands
 

@@ -51,7 +51,12 @@ Never symlink files the target tool itself rewrites (e.g. `~/.claude/settings.js
 `bin/sync doctor` reports without changing anything: missing or stale links, links pointing to the wrong place, regular files blocking destinations, frontmatter violations, and duplicate skill names.
 It exits non-zero when issues are found, so it can gate CI or a pre-commit hook later.
 
-## Shell integration
+## Shell integration and location discovery
 
-The `zsh-custom-scripts` plugin calls `bin/sync --quiet` on shell startup when this repo is present (see `custom/default/400_ai-config.zshrc.zsh` there).
-A fresh machine only needs: clone this repo, run `bin/sync` once (or open a new shell if the zsh plugin is installed).
+The repo can live anywhere.
+Every `bin/sync` run registers its own location in `~/.config/ai-config/home` and touches `~/.config/ai-config/last-sync`.
+The `zsh-custom-scripts` plugin (`custom/default/400_ai-config.zshrc.zsh` there) resolves the repo via `$AI_CONFIG_HOME` if set, else the registered location, and on shell startup runs `bin/sync --quiet` at most once per 24 hours based on the stamp.
+`ai-config-sync` forces a run anytime and forwards arguments (`ai-config-sync doctor`).
+
+A fresh machine only needs: clone this repo anywhere, run `bin/sync` once to register it.
+If the repo is moved, run `bin/sync` once from the new location; the stale registration heals itself.

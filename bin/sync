@@ -219,11 +219,16 @@ for file in "${INSTRUCTION_FILES[@]}"; do
     fi
 done
 
-# --- record layers for future prunes ------------------------------------------
+# --- record state for future runs ---------------------------------------------
 
+# Besides the layer list, register this repo's location (so shell hooks can
+# find it without a hardcoded path) and stamp the run (so startup hooks can
+# throttle themselves).
 if [[ "$MODE" != doctor ]]; then
     mkdir -p "$CONFIG_DIR"
     printf '%s\n' "${PRUNE_LAYERS[@]}" | sort -u > "$KNOWN_LAYERS_FILE"
+    printf '%s\n' "$REPO_ROOT" > "$CONFIG_DIR/home"
+    touch "$CONFIG_DIR/last-sync"
 fi
 
 # --- doctor summary ---------------------------------------------------------
