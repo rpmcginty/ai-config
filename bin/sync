@@ -1,0 +1,238 @@
+#!/usr/bin/env bash
+# sync - link this repo's agent config assets into their live locations.
+#
+# Usage:
+#   bin/sync [--quiet] [--force] [--include-drafts]
+#   bin/sync doctor
+#
+# What it does:
+#   1. Builds the layer list: this repo, then any overlay repos listed in
+#      ~/.config/ai-config/overlays (one path per line, later layers win).
+#   2. Collects leaf skills (directories containing SKILL.md) from each
+#      layer's skills/ tree, skipping status: draft/deprecated, and symlinks
+#      them flat into each target dir (~/.claude/skills, ~/.agents/skills).
+#   3. Symlinks instruction files (AGENTS.md, VOICE.md, OPINIONS.md) into $HOME.
+#   4. Prunes symlinks in target dirs that point into a layer but no longer
+#      correspond to a live skill. Links pointing elsewhere are never touched.
+#
+# `doctor` reports drift and convention violations without changing anything.
+# A pre-existing regular file at a destination is left untouched unless
+# --force is passed.
+
+set -euo pipefail
+
+REPO_ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/ai-config"
+OVERLAYS_FILE=${AI_CONFIG_OVERLAYS_FILE:-"$CONFIG_DIR/overlays"}
+# Every layer ever synced, so links from a since-deregistered overlay still
+# get pruned instead of lingering.
+KNOWN_LAYERS_FILE="$CONFIG_DIR/known-layers"
+
+SKILL_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
+INSTRUCTION_FILES=(AGENTS.md VOICE.md OPINIONS.md)
+
+MODE=sync
+QUIET=false
+FORCE=false
+INCLUDE_DRAFTS=false
+
+for arg in "$@"; do
+    case "$arg" in
+        doctor) MODE=doctor ;;
+        --quiet|-q) QUIET=true ;;
+        --force|-f) FORCE=true ;;
+        --include-drafts) INCLUDE_DRAFTS=true ;;
+        --help|-h) sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) echo "unknown argument: $arg" >&2; exit 2 ;;
+    esac
+done
+
+ISSUES=0
+log()    { "$QUIET" || printf '%s\n' "$*"; }
+warn()   { printf 'warn: %s\n' "$*" >&2; }
+issue()  { printf 'doctor: %s\n' "$*"; ISSUES=$((ISSUES + 1)); }
+
+TMP_DIR=$(mktemp -d)
+trap 'rm -rf "$TMP_DIR"' EXIT
+MANIFEST="$TMP_DIR/manifest"   # lines: <name>\t<layer>\t<abs skill dir>
+: > "$MANIFEST"
+
+# --- layers -----------------------------------------------------------------
+
+LAYERS=("$REPO_ROOT")
+if [[ -f "$OVERLAYS_FILE" ]]; then
+    while IFS= read -r line; do
+        [[ -z "$line" || "$line" == \#* ]] && continue
+        # expand a leading ~ manually; overlay paths must otherwise be absolute
+        line=${line/#\~/$HOME}
+        if [[ -d "$line" ]]; then
+            LAYERS+=("$(cd -- "$line" && pwd -P)")
+        else
+            warn "overlay path not found, skipping: $line"
+        fi
+    done < "$OVERLAYS_FILE"
+fi
+
+PRUNE_LAYERS=("${LAYERS[@]}")
+if [[ -f "$KNOWN_LAYERS_FILE" ]]; then
+    while IFS= read -r line; do
+        [[ -z "$line" ]] && continue
+        for layer in "${LAYERS[@]}"; do
+            [[ "$line" == "$layer" ]] && continue 2
+        done
+        PRUNE_LAYERS+=("$line")
+    done < "$KNOWN_LAYERS_FILE"
+fi
+
+# --- helpers ----------------------------------------------------------------
+
+# Print the value of a frontmatter key from a SKILL.md (empty if absent).
+frontmatter_value() {
+    local file=$1 key=$2
+    awk -v key="$key" '
+        NR == 1 && $0 != "---" { exit }
+        NR > 1 && $0 == "---" { exit }
+        NR > 1 && index($0, key ":") == 1 {
+            sub("^" key ":[ \t]*", ""); gsub(/^['\''"]|['\''"]$/, ""); print; exit
+        }
+    ' "$file"
+}
+
+# True if $1 lives under the skills/ tree of any current or previously
+# synced layer (i.e. a link we own and may prune).
+owned_by_layer() {
+    local path=$1 layer
+    for layer in "${PRUNE_LAYERS[@]}"; do
+        [[ "$path" == "$layer/skills/"* ]] && return 0
+    done
+    return 1
+}
+
+link_into_place() {
+    local src=$1 dest=$2
+    if [[ -e "$dest" && ! -L "$dest" ]]; then
+        if "$FORCE"; then
+            rm -rf "$dest"
+        else
+            warn "$dest exists and is not a symlink; pass --force to replace it"
+            return 0
+        fi
+    fi
+    if [[ "$(readlink "$dest" 2>/dev/null)" != "$src" ]]; then
+        ln -sfn "$src" "$dest"
+        log "linked $dest -> $src"
+    fi
+}
+
+# --- collect skills ---------------------------------------------------------
+
+for layer in "${LAYERS[@]}"; do
+    [[ -d "$layer/skills" ]] || continue
+    while IFS= read -r skill_md; do
+        dir=$(dirname "$skill_md")
+        name=$(basename "$dir")
+        status=$(frontmatter_value "$skill_md" status)
+        status=${status:-stable}
+        fm_name=$(frontmatter_value "$skill_md" name)
+        description=$(frontmatter_value "$skill_md" description)
+
+        if [[ "$MODE" == doctor ]]; then
+            [[ "$fm_name" != "$name" ]] && issue "$skill_md: frontmatter name '$fm_name' != directory name '$name'"
+            [[ -z "$description" ]] && issue "$skill_md: missing description"
+            case "$status" in stable|draft|deprecated) ;; *) issue "$skill_md: invalid status '$status'" ;; esac
+            # a duplicate name within the same layer is an error; across
+            # layers it is an intentional override (later layer wins)
+            if dup=$(grep "^${name}	${layer}	" "$MANIFEST" | head -1); [[ -n "$dup" ]]; then
+                issue "duplicate skill name '$name' in $layer: ${dup##*	} and $dir"
+            fi
+        fi
+
+        case "$status" in
+            deprecated) continue ;;
+            draft) "$INCLUDE_DRAFTS" || continue ;;
+        esac
+
+        # later layers win: drop any earlier entry with the same name
+        if grep -q "^${name}	" "$MANIFEST"; then
+            grep -v "^${name}	" "$MANIFEST" > "$MANIFEST.tmp" && mv "$MANIFEST.tmp" "$MANIFEST"
+        fi
+        printf '%s\t%s\t%s\n' "$name" "$layer" "$dir" >> "$MANIFEST"
+    done < <(find "$layer/skills" -name SKILL.md -type f | sort)
+done
+
+# --- link + prune skills ----------------------------------------------------
+
+for target in "${SKILL_TARGETS[@]}"; do
+    if [[ "$MODE" == doctor ]]; then
+        while IFS=$'\t' read -r name layer dir; do
+            dest="$target/$name"
+            if [[ -e "$dest" && ! -L "$dest" ]]; then
+                issue "$dest exists as a regular file, blocking skill '$name'"
+            elif [[ "$(readlink "$dest" 2>/dev/null)" != "$dir" ]]; then
+                issue "$dest missing or pointing elsewhere (want $dir)"
+            fi
+        done < "$MANIFEST"
+        if [[ -d "$target" ]]; then
+            for existing in "$target"/*; do
+                [[ -L "$existing" ]] || continue
+                resolved=$(readlink "$existing")
+                if owned_by_layer "$resolved" && ! grep -q "	${resolved}$" "$MANIFEST"; then
+                    issue "stale link $existing -> $resolved"
+                fi
+            done
+        fi
+        continue
+    fi
+
+    mkdir -p "$target"
+    while IFS=$'\t' read -r name layer dir; do
+        link_into_place "$dir" "$target/$name"
+    done < "$MANIFEST"
+
+    for existing in "$target"/*; do
+        [[ -L "$existing" ]] || continue
+        resolved=$(readlink "$existing")
+        if owned_by_layer "$resolved" && ! grep -q "	${resolved}$" "$MANIFEST"; then
+            rm "$existing"
+            log "pruned $existing -> $resolved"
+        fi
+    done
+done
+
+# --- instruction files ------------------------------------------------------
+
+for file in "${INSTRUCTION_FILES[@]}"; do
+    src=""
+    for layer in "${LAYERS[@]}"; do
+        [[ -f "$layer/instructions/$file" ]] && src="$layer/instructions/$file"
+    done
+    [[ -n "$src" ]] || continue
+    dest="$HOME/$file"
+    if [[ "$MODE" == doctor ]]; then
+        if [[ -e "$dest" && ! -L "$dest" ]]; then
+            issue "$dest exists as a regular file, blocking instruction link"
+        elif [[ "$(readlink "$dest" 2>/dev/null)" != "$src" ]]; then
+            issue "$dest missing or pointing elsewhere (want $src)"
+        fi
+    else
+        link_into_place "$src" "$dest"
+    fi
+done
+
+# --- record layers for future prunes ------------------------------------------
+
+if [[ "$MODE" != doctor ]]; then
+    mkdir -p "$CONFIG_DIR"
+    printf '%s\n' "${PRUNE_LAYERS[@]}" | sort -u > "$KNOWN_LAYERS_FILE"
+fi
+
+# --- doctor summary ---------------------------------------------------------
+
+if [[ "$MODE" == doctor ]]; then
+    if [[ "$ISSUES" -eq 0 ]]; then
+        echo "doctor: all clean (${#LAYERS[@]} layer(s), $(wc -l < "$MANIFEST" | tr -d ' ') active skill(s))"
+    else
+        echo "doctor: $ISSUES issue(s) found"
+        exit 1
+    fi
+fi
