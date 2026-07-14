@@ -55,8 +55,11 @@ It exits non-zero when issues are found, so it can gate CI or a pre-commit hook 
 
 The repo can live anywhere.
 Every `bin/sync` run registers its own location in `~/.config/ai-config/home` and touches `~/.config/ai-config/last-sync`.
-The `zsh-custom-scripts` plugin (`custom/default/400_ai-config.zshrc.zsh` there) resolves the repo via `$AI_CONFIG_HOME` if set, else the registered location, and on shell startup runs `bin/sync --quiet` at most once per 24 hours based on the stamp.
+The `zsh-custom-scripts` plugin (`custom/default/400_ai-config.zshrc.zsh` there) resolves the repo via `$AI_CONFIG_HOME` if set, else the registered location, and on shell startup runs `bin/sync --quiet --pull` at most once per 24 hours based on the stamp.
 `ai-config-sync` forces a run anytime and forwards arguments (`ai-config-sync doctor`).
+
+With `--pull`, sync first fast-forwards every layer (this repo and overlays) from its remote, so machines converge on pushed changes within a day.
+Pull guards: `--ff-only` (a diverged local branch is never merged), dirty worktrees are skipped with a warning, and git runs with batch-mode ssh plus a short connect timeout so an offline machine fails fast instead of hanging shell startup.
 
 A fresh machine only needs: clone this repo anywhere, run `bin/sync` once to register it.
 If the repo is moved, run `bin/sync` once from the new location; the stale registration heals itself.

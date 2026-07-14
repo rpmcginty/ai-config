@@ -33,7 +33,11 @@ bin/sync                    # link + prune everything
 bin/sync doctor             # report drift and convention violations, change nothing
 bin/sync --include-drafts   # also link status: draft skills, for testing
 bin/sync --force            # replace regular files sitting where links belong
+bin/sync --pull             # fast-forward this repo and overlays from their remotes first
 ```
+
+The zsh startup hook uses `--pull`, so each machine picks up edits pushed from other machines within a day without any manual step.
+Pulls are safe by construction: fast-forward only, skipped when the worktree is dirty, and never allowed to prompt (offline machines fail fast and quiet).
 
 ## Adding a skill
 
