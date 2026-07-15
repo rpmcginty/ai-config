@@ -1,7 +1,7 @@
 ---
 name: grilling
 description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
-status: draft
+status: stable
 ---
 
 Interview me relentlessly about every aspect of this until we reach a shared understanding.
