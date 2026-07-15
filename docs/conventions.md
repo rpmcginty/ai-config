@@ -28,7 +28,19 @@ Write it as a trigger condition, not a summary of the body.
 - `status: deprecated` skills are never synced and get pruned from targets on the next sync.
 Delete them after a decent interval; git remembers.
 
-Additional keys that specific tools understand (e.g. `argument-hint`) are allowed but optional.
+Additional keys that specific tools understand (e.g. `argument-hint`, `disable-model-invocation`) are allowed but optional.
+
+## Vendored skills
+
+Skills copied from external repos carry two extra frontmatter keys so updates stay reviewable:
+
+```yaml
+upstream: mattpocock/skills@skills/productivity/grill-me   # owner/repo@path-in-repo
+upstream-commit: 697d4ce9742da5...                          # upstream commit last synced
+```
+
+The `sync-upstream` meta-skill checks these against the upstream repo, shows what changed, and applies approved updates while preserving local edits.
+Local copies are yours: edit freely; upstream changes are merged deliberately, never auto-applied.
 
 ## Body
 

@@ -2,6 +2,8 @@
 name: grilling
 description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
 status: stable
+upstream: mattpocock/skills@skills/productivity/grilling
+upstream-commit: 697d4ce9742da558fd1ba6697c8e9775e2e302dd
 ---
 
 Interview me relentlessly about every aspect of this until we reach a shared understanding.
