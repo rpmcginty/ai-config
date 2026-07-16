@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "name": "ai-config",
+      "path": "."
+    },
+    {
+      "name": "zsh-custom-scripts",
+      "path": "../../.oh-my-zsh/custom/plugins/zsh-custom-scripts"
+    }
+  ],
+  "settings": {
+    "files.associations": {
+      "*.zsh": "shellscript",
+      "*.plugin.zsh": "shellscript"
+    }
+  }
+}
