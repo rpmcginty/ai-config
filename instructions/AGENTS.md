@@ -5,7 +5,6 @@ Project-level `AGENTS.md` / `CLAUDE.md` files take precedence over anything here
 
 ## General guidelines
 
-- Never use the em dash "—" or en dash "–". Use a plain dash "-" instead.
 - When writing commit messages, never auto-add your agent name as a co-author.
 - Commit messages are plain imperative, lowercase fine: "fix get_version test", "update uv.lock".
 No feat:/fix: prefixes unless the repo requires them.
@@ -18,8 +17,12 @@ But simplicity beats speculative flexibility: do not add abstraction layers, con
 This makes sure you find the real problem so your fix actually solves it.
 If a true e2e repro is not feasible, reproduce as close to it as possible and note the gap.
 - Hold a high standard for engineering excellence: linting, test failures, and test flakiness.
-If you notice issues outside your current scope, fix them in a separate commit.
-If the fix is non-trivial, flag it to Ryan instead of fixing it.
+- Keep unrelated improvements out of the working diff.
+When you notice an issue outside the current scope, fix it in a separate commit if it is trivial, and flag it to Ryan instead if it is not.
+- Clean up the orphans your own changes create: imports, variables, and helpers that your edit left unused.
+Pre-existing dead code is not yours to remove unless asked; mention it instead.
+- Before starting, name the check that will show the work is done: a test to write, a command to run, an output to observe.
+Loop on that check yourself instead of handing back unverified work.
 
 ## Reference files
 
