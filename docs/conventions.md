@@ -53,7 +53,6 @@ If the name needs "and", split it.
 ## Markdown style
 
 - Each full sentence on its own line.
-- Plain dashes only; never em or en dashes.
 
 ## Lifecycle
 

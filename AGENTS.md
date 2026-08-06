@@ -1,7 +1,7 @@
 # Working on this repo
 
 This repo holds Ryan's portable AI agent configuration: a hierarchical skill tree, global instruction files, and the sync script that links them into live locations.
-Global ground rules in `instructions/AGENTS.md` apply here too (notably: sentence-per-line markdown, no em or en dashes, plain lowercase imperative commits).
+Global ground rules in `instructions/AGENTS.md` apply here too (notably: sentence-per-line markdown, plain lowercase imperative commits).
 
 ## Map
 
