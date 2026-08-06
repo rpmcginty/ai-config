@@ -8,14 +8,7 @@ Report both, and every place they disagree.
 
 ## 1. Collect declared conventions
 
-Read the configuration that encodes rules, in this order:
-
-```bash
-cat .editorconfig .pre-commit-config.yaml 2>/dev/null
-cat pyproject.toml setup.cfg ruff.toml .flake8 2>/dev/null      # or eslint/prettier/tsconfig, rustfmt, etc.
-cat CONTRIBUTING.md CLAUDE.md AGENTS.md docs/conventions.md 2>/dev/null
-ls .github/workflows/ && cat .github/workflows/*.yml
-```
+Read whatever encodes rules in this repo: editor and formatter config, the linter and type-checker settings (wherever this language keeps them), pre-commit hooks, `CONTRIBUTING.md`, `CLAUDE.md`, `AGENTS.md`, any conventions doc, and the CI workflows.
 
 CI is the strongest signal: a rule that gates merges is enforced, a rule in prose is aspirational.
 Record for each declared rule whether it is enforced by tooling, checked in CI, or only written down.
@@ -71,7 +64,6 @@ Gaps:
 - Split: config is read via env vars in `config.py` and via `Settings` in newer modules. `Settings` is newer (added 2026-03) and is the direction to follow.
 ```
 
-Cite the evidence for every row.
 A convention you cannot point at is a guess, and a guessed convention in a summary is worse than a missing one, because future sessions will enforce it on the user's code.
 
 State counts honestly: "spot-checked 12 of ~80 files" is a real claim, "the codebase consistently..." from a 12-file sample is not.

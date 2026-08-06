@@ -7,16 +7,35 @@ The governing rule: an existing summary may contain knowledge no scan can recove
 Never regenerate from scratch.
 Verify, edit surgically, and preserve everything you did not disprove.
 
+## Scope: which documents
+
+A repo may carry a layered set, a root summary plus a per-package summary next to each package.
+Settle scope before verifying anything.
+
+- The user named a document or a package: update that one.
+- The user said "the summary" and a layered set exists: update the root, plus the per-package summary for any package touched since that package's own marker commit.
+Say which you are updating and which you are skipping before you start.
+
+Each document has its own fences, its own marker commit, and its own claim count, and is verified against its own scope.
+A root-level claim about `packages/api` is still the root document's claim to fix.
+Report per document rather than as one merged tally.
+
 ## 1. Separate generated from human content
 
-Look for the marker comment:
+Look for the fence markers described in `SKILL.md`:
 
 ```markdown
-<!-- codebase-summarizer: generated 2026-07-13, commit a1b2c3d, N claims -->
+<!-- codebase-summarizer: begin -->
+<!-- codebase-summarizer: end; generated 2026-07-30, commit a1b2c3d, N claims -->
 ```
 
-- **Marker present** - everything from the start of the generated section to the marker is prior output of this skill, and is yours to edit. Anything outside it is human-written.
-- **No marker** - treat the entire document as human-written. Verify it and propose changes, but do not rewrite it wholesale without saying so first.
+- **Both fences present** - everything between them is prior output of this skill and is yours to edit.
+Everything outside them is human-written.
+- **Closing fence only** (written before this skill used paired fences) - you cannot tell where the generated section starts.
+Do not assume it starts at the top of the file.
+Propose a boundary to the user, and once they confirm it, add the opening fence as part of this update.
+- **Neither** - treat the entire document as human-written.
+Verify it and propose changes, but do not rewrite it wholesale without saying so first.
 
 Human-written content is never deleted, reworded, or reordered.
 If a human sentence contradicts the code, flag it in your report and leave it in place; the human may be describing intent, a pending change, or a bug.
@@ -32,10 +51,10 @@ Do not leave it untouched just because it cannot be disproven.
 
 ## 3. Verify each claim against current code
 
-Match the check to the claim type, cheapest first:
+Match the check to the claim type, and run the cheap ones first so the expensive reading starts from a narrowed field:
 
-- Path claims: `test -e <path>`, or `ls` the parent to find where it moved.
-- Symbol claims: `grep -rn "class Foo\|def foo" <dir>` - confirm it exists and still lives where the summary says.
+- Path and symbol claims: confirm the file or symbol exists and still lives where the summary says.
+If it moved, find where it moved to.
 - Import and dependency claims: read the manifest and lockfile, not the summary's memory of them.
 - Command claims: confirm the command still appears in the Makefile, manifest scripts, or CI workflow. Run it only if it is cheap and safe; a test suite usually is not.
 - Convention claims: re-check with the rule of three from `conventions-audit.md`, weighted toward recently changed files. A convention can decay without any file being deleted.
@@ -45,6 +64,9 @@ Do not verify a claim by finding the sentence that stated it somewhere else in t
 Verify against code.
 
 ## 4. Classify
+
+The edit verbs below apply only to content inside the fences.
+A claim outside them is human-written: classify it the same way, then report it under "flagged, not changed" and leave the line alone.
 
 - **Confirmed** - still true. Leave byte-identical, even if you would phrase it differently. Churn on confirmed lines makes the diff unreviewable and hides the real changes.
 - **Stale** - right subject, wrong detail (moved path, renamed symbol, changed default, added parameter). Fix the detail, keep the sentence.

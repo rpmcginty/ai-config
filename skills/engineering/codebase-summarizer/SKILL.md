@@ -6,56 +6,64 @@ status: stable
 
 # Codebase Summarizer
 
-Produce summaries of a repo or package that make future Claude sessions immediately effective, and keep those summaries truthful as the code evolves. The primary reader is Claude; the secondary reader is a human newcomer. Both are served by the same thing: dense, concrete, verifiable statements — not marketing prose.
+Produce summaries of a repo or package that make future Claude sessions immediately effective, and keep those summaries truthful as the code evolves.
+The primary reader is Claude; the secondary reader is a human newcomer.
+Both want the same document: dense, concrete, verifiable statements, not marketing prose.
+Claude never needs motivation, and a newcomer never needs to be told what the file tree already shows.
 
 ## The core principle: write claims, not vibes
 
-Every sentence in a summary is a **claim** that a future session will rely on and that a future run of this skill must be able to **verify against the code**. This works only if claims are:
+Every sentence in a summary is a **claim** that a future session will rely on and that a future run of this skill must be able to **verify against the code**.
+This works only if claims are:
 
-- **Located** — name the file, directory, or symbol: "Retry logic lives in `core/utils/retry.py` (`RetryPolicy`)", not "the package has robust retry handling".
-- **Checkable** — a reader with the repo open can confirm or refute it in under a minute.
-- **Load-bearing** — it changes what a reader would do. If deleting the sentence loses nothing, delete it.
+- **Located**: name the file, directory, or symbol.
+"Retry logic lives in `core/utils/retry.py` (`RetryPolicy`)", not "the package has robust retry handling".
+- **Checkable**: a reader with the repo open can confirm or refute it in under a minute.
+- **Load-bearing**: it changes what a reader would do.
+If deleting the sentence loses nothing, delete it.
 
-Vague claims can never go stale because they never said anything; they also never helped anyone. Prefer a shorter summary of hard claims over a longer one of soft ones.
+Vague claims can never go stale because they never said anything; they also never helped anyone.
+Prefer a shorter summary of hard claims over a longer one of soft ones.
+The highest-value claims are the non-obvious ones: the gotcha, the historical wart, the "you would expect X but actually Y".
 
 ## Mode selection
 
-First, look for an existing summary: `CLAUDE.md`, `docs/ARCHITECTURE.md`, `ARCHITECTURE.md`, `docs/CODEBASE.md`, `.claude/` docs, or anything the user points at. Also check whether an existing `CLAUDE.md` contains a marker comment from a previous run (see Metadata block below).
+First, look for an existing summary: `CLAUDE.md`, `docs/ARCHITECTURE.md`, `ARCHITECTURE.md`, `docs/CODEBASE.md`, `.claude/` docs, or anything the user points at.
 
-- **Summary exists** → run **Update mode** (read `references/update-mode.md`). Do not regenerate from scratch; the existing doc may contain hand-written knowledge that a fresh scan cannot recover.
-- **No summary** → run **Bootstrap mode** (below), which includes the conventions audit.
-- **User asks only about conventions/best practices** → run just the conventions audit (read `references/conventions-audit.md`) and report findings; offer to fold them into a summary.
+- **Summary exists**: read `references/update-mode.md` and follow it in full.
+Do not regenerate from scratch; the existing doc may contain hand-written knowledge that a fresh scan cannot recover.
+- **No summary**: run bootstrap mode, below.
+- **User asks only about conventions or best practices**: read `references/conventions-audit.md`, follow it, report the findings, and offer to fold them into a summary.
 
 ## Bootstrap mode
 
-### 1. Survey before reading
+### 1. Identify the stack
 
-Get the shape of the repo before reading any code in depth:
+Determine the dominant language and find the package manifest before anything else.
+The manifest is authoritative for the name, dependencies, entry points, and scripts.
+Every later step is language-specific (which files hold the mass, which config encodes conventions, which commands are real), so settle this first instead of assuming.
 
-```bash
-# Layout (adjust depth to repo size)
-find . -type f -name "*.py" | head -50        # or the dominant language
-tree -d -L 3 -I 'node_modules|__pycache__|.git|.venv|dist|build'
-# Ground truth for entry points and structure
-cat pyproject.toml setup.py package.json Cargo.toml 2>/dev/null
-cat README.md 2>/dev/null
-git log --oneline -15                          # what's been active lately
-wc -l $(git ls-files '*.py') | sort -rn | head -20   # where the mass is
-```
+### 2. Survey before reading
 
-Identify: the package manifest (authoritative for name, deps, entry points, scripts), the top 3–5 largest/most-imported modules (these are the load-bearing walls), and the test layout.
+Get the shape of the repo before reading any code in depth.
+Establish: the top-level layout, the three to five largest or most-imported modules (the load-bearing walls), the test layout, what the README claims this is, and what has been active in recent history.
+How you gather that is yours to choose; suit it to the language and size of the repo.
 
-### 2. Read the load-bearing code
+### 3. Read the load-bearing code
 
-Read the main entry points and the most-imported modules in full. Skim the rest at the level of module docstrings, class/function signatures, and `__init__.py` exports. You are building a mental model of: what problem this package solves, what the key abstractions are, how data flows through them, and what a contributor touches for a typical change.
+Read the main entry points and the most-imported modules in full.
+Skim the rest at the level of module docstrings, class and function signatures, and package exports.
+You are building a mental model of what problem this package solves, what the key abstractions are, how data flows through them, and what a contributor touches for a typical change.
 
-### 3. Run the conventions audit
+### 4. Run the conventions audit
 
-Read `references/conventions-audit.md` and follow it. The output feeds the "Conventions" and "Gaps" sections of the summary.
+Read `references/conventions-audit.md` and follow it.
+Its output feeds the Conventions and Gotchas sections of the summary.
 
-### 4. Choose placement
+### 5. Choose placement
 
-Recommend placement to the user based on the repo — state your recommendation and reasoning in one or two sentences, then proceed (or ask, if genuinely ambiguous):
+Recommend placement based on the repo.
+State your recommendation and reasoning in one or two sentences, then proceed, or ask if it is genuinely ambiguous.
 
 | Repo shape | Placement |
 |---|---|
@@ -63,38 +71,30 @@ Recommend placement to the user based on the repo — state your recommendation 
 | CLAUDE.md exists with hand-written instructions (build commands, user preferences) | Separate `docs/ARCHITECTURE.md`; add one link line to CLAUDE.md. Never bury or rewrite a human's instructions |
 | Monorepo / multiple packages / very large single package | Layered: root `CLAUDE.md` with the overview + a short per-package summary next to each package, linked from the root |
 
-The test for "layered": would a single file exceed ~300 lines or force a session working on one package to wade through others? Claude context is precious — a session working in `packages/api` should be able to load only the root overview plus `packages/api`'s summary.
+The test for "layered": would a single file exceed ~300 lines, or force a session working on one package to wade through others?
+Claude context is precious.
+A session working in `packages/api` should be able to load only the root overview plus `packages/api`'s summary.
 
-### 5. Write the summary
+### 6. Write the summary
 
-Read `references/summary-template.md` for the section structure and a worked example. Rules that matter most:
+Read `references/summary-template.md` for the section structure, a worked example, and length calibration.
+Write the result to the path chosen in step 5.
+If a file already exists at that path, stop and switch to update mode; bootstrap never overwrites.
 
-- Lead with a 2–4 sentence "what is this and why does it exist" a reader absorbs in ten seconds.
-- The directory map explains **why** each area exists, not just what it's named. `services/ — one module per AWS service wrapper; add new service clients here` beats `services/ — service code`.
-- Include the commands that actually work in *this* repo (test, lint, build, run), copied from CI config or Makefile — not guessed.
-- Keep it honest about warts: if a module is deprecated, half-migrated, or known-confusing, say so. Future sessions waste the most time when docs describe the intended design instead of the actual one.
-- End with the metadata block.
+### 7. Verify your own claims, then stamp it
 
-### 6. Metadata block
+Walk your own output the way update mode would.
+For each claim, name the file you read to get it.
+Delete anything you cannot source, or rewrite it as something you can.
 
-Close every generated summary (or generated section) with:
+Then fence the generated content, opening and closing:
 
 ```markdown
-<!-- codebase-summarizer: generated 2026-07-13, commit a1b2c3d, N claims -->
+<!-- codebase-summarizer: begin -->
+...generated summary...
+<!-- codebase-summarizer: end; generated 2026-07-30, commit a1b2c3d, N claims -->
 ```
 
-The commit is informational context (how old is this?), not the update mechanism — updates verify claims against code directly. The marker also tells a future run where machine-generated content begins, so it never mistakes human-written prose for its own output.
-
-## Update mode
-
-Read `references/update-mode.md` and follow it in full. The one-paragraph version: parse the existing summary into discrete claims; verify each against the current code (path exists? symbol exists? behavior still matches?); classify each as confirmed / stale / obsolete; then scan for significant *new* reality the summary doesn't mention (new top-level dirs, new key modules, new deps, changed commands). Edit surgically — fix what's wrong, add what's missing, and leave confirmed claims and all human-written content byte-identical. Report to the user what changed and why.
-
-## Writing for the dual audience
-
-Claude and a newcomer want the same document with one difference in emphasis: Claude never needs motivation or encouragement, and a newcomer never needs to be told things the file tree makes obvious. Write terse, declarative, path-anchored prose and both are served. Avoid: "This powerful library provides...", restating the directory tree without commentary, and documenting standard-library-level knowledge. Include: the non-obvious — the gotcha, the historical wart, the "you'd expect X but actually Y".
-
-## Reference files
-
-- `references/summary-template.md` — section structure, worked example, length calibration. Read before writing any summary.
-- `references/conventions-audit.md` — how to extract conventions from code and identify gaps. Read for bootstrap step 3 or standalone audits.
-- `references/update-mode.md` — the claim-verification workflow. Read whenever an existing summary is present.
+Both fences are required.
+They tell a future run exactly which lines are its own output, so it never edits human-written prose, and a single closing marker cannot do that once a human adds anything above the generated section.
+The commit is informational context (how old is this?), not the update mechanism; updates verify claims against code directly.

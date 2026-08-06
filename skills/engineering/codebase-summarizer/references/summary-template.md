@@ -49,12 +49,14 @@ A summary that hides warts costs more time than one that omits a whole subsystem
 
 ### 8. Metadata block
 
-The closing marker described in `SKILL.md`.
+The closing fence described in `SKILL.md`, matching the opening fence above the summary.
 
 ## Worked example
 
 ```markdown
 # CLAUDE.md
+
+<!-- codebase-summarizer: begin -->
 
 `datalake-tools` is a Python library that wraps the team's S3 and Athena access so
 analysis scripts do not each reinvent credential handling and partition discovery.
@@ -106,13 +108,10 @@ Integration tests need `AWS_PROFILE=datalake-dev` exported; without it they are 
 - Two config styles coexist: `config.py` reads env vars directly, while newer code takes a `Settings` object. `Settings` is the intended direction; the env-var reads predate it.
 - `schema/` is generated but committed, so a stale `schema/` and a live Glue catalog can disagree. Re-run `scripts/pull_schema.py` before trusting a column list.
 
-<!-- codebase-summarizer: generated 2026-07-30, commit a1b2c3d, 24 claims -->
+<!-- codebase-summarizer: end; generated 2026-07-30, commit a1b2c3d, 24 claims -->
 ```
 
-Note what the example does not do.
-It never says the library is powerful, well-designed, or easy to use.
-It never restates the directory tree without adding a reason.
-Every wart is stated with the consequence for the reader.
+Note what the example does not do: it never restates the directory tree without adding a reason, and every wart is stated with its consequence for the reader.
 
 ## Length calibration
 
@@ -120,6 +119,5 @@ Every wart is stated with the consequence for the reader.
 - Medium repo, several subsystems: 120-250 lines.
 - Anything pushing past ~300 lines: split it, per the placement table in `SKILL.md`.
 
-Length follows the number of hard claims available, not the size of the repo.
-A large repo with a simple shape gets a short summary.
+Length follows the number of hard claims available, not the size of the repo, so a large repo with a simple shape gets a short summary.
 When a section has nothing checkable to say, delete the section rather than filling it.
