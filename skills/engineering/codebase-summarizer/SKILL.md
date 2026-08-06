@@ -1,6 +1,6 @@
 ---
 name: codebase-summarizer
-description: Generate and maintain codebase summaries (CLAUDE.md / architecture docs) that orient future Claude sessions and human newcomers. Use this skill whenever the user asks to summarize, document, or explain a repo or package's structure, extract the coding conventions and best practices a codebase actually follows (and where the gaps are), create or improve a CLAUDE.md, or refresh/update an existing codebase summary that has gone stale. Trigger even if the user just says "help Claude understand this repo", "onboard me to this codebase", "is this doc still accurate", or points you at a repo and asks "what is this".
+description: Generate and maintain codebase summaries (CLAUDE.md, ARCHITECTURE.md) that orient future sessions. Use when the user asks to summarize or document a repo's structure, onboard someone to a codebase, extract the conventions it actually follows, create or improve a CLAUDE.md, or check whether an existing summary has gone stale.
 status: stable
 ---
 
