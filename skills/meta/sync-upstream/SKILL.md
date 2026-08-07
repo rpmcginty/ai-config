@@ -29,12 +29,13 @@ Run from the ai-config repo root (and each overlay that vendors skills).
 5. Show the user each skill's upstream diff and ask which to take.
 6. For approved updates, apply the upstream changes to the local files:
    - Preserve local frontmatter keys (`status`, `upstream`, `upstream-commit`) and any deliberate local edits to the body; where an upstream change conflicts with a local edit, show the conflict and let the user decide.
-   - Ignore upstream files the local copy deliberately omits (e.g. `agents/` harness metadata) unless the body references them.
+   - Take the whole upstream skill directory, including harness metadata like `agents/openai.yaml`; this repo is tool-agnostic, so other harnesses' interface files are worth carrying.
+   - Keep harness metadata consistent with the frontmatter it mirrors: `disable-model-invocation: true` corresponds to `policy.allow_implicit_invocation: false`.
 7. Set `upstream-commit` to the latest sha, run `bin/sync doctor`, and commit with a message like `sync grill-me from upstream`.
 
 ## Vendoring a new skill
 
-1. Copy the skill directory from the upstream repo into the domain tree (SKILL.md plus any files the body references; skip unrelated harness metadata).
+1. Copy the whole skill directory from the upstream repo into the domain tree: `SKILL.md`, any files the body references, and harness metadata such as `agents/`.
 2. Ensure frontmatter `name` matches the local directory name and add `status: draft`.
 3. Add the `upstream:` key and set `upstream-commit` to the latest commit touching that path (command in step 3 above).
 4. Follow the normal lifecycle from `docs/conventions.md` (doctor, test via `--include-drafts`, promote).
