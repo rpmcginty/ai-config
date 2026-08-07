@@ -11,10 +11,12 @@ Map this as a **design tree**: every decision branches into the decisions that h
 
 Work the tree in **rounds**.
 The **frontier** is every decision whose prerequisites are already settled — the questions you can ask _now_ without guessing at answers you haven't heard yet.
-Ask the whole frontier in one round: number each question and give your recommended answer.
+Ask the whole frontier in one round, each question with your recommended answer.
 Then wait for the user's answers before the next round.
 
-Each question should be formatted like so:
+Ask the round through a structured question tool if the harness provides one (in Claude Code, `AskUserQuestion`): one entry per frontier question, with your recommended answer as the first option, labelled `(Recommended)`.
+If the tool caps how many questions one call can carry, issue back-to-back calls until the whole frontier is asked — never trim the frontier to fit the tool.
+Only when no such tool is available, write the questions inline in this format:
 
 ```
 ❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
