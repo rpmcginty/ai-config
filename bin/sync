@@ -11,7 +11,7 @@
 #   2. Collects leaf skills (directories containing SKILL.md) from each
 #      layer's skills/ tree, skipping status: draft/deprecated, and symlinks
 #      them flat into each target dir (~/.claude/skills, ~/.agents/skills).
-#   3. Symlinks instruction files (AGENTS.md, VOICE.md, OPINIONS.md) into $HOME.
+#   3. Symlinks instruction files (AGENTS.md, OPINIONS.md) into $HOME.
 #   4. Prunes symlinks in target dirs that point into a layer but no longer
 #      correspond to a live skill. Links pointing elsewhere are never touched.
 #
@@ -29,7 +29,7 @@ OVERLAYS_FILE=${AI_CONFIG_OVERLAYS_FILE:-"$CONFIG_DIR/overlays"}
 KNOWN_LAYERS_FILE="$CONFIG_DIR/known-layers"
 
 SKILL_TARGETS=("$HOME/.claude/skills" "$HOME/.agents/skills")
-INSTRUCTION_FILES=(AGENTS.md VOICE.md OPINIONS.md)
+INSTRUCTION_FILES=(AGENTS.md OPINIONS.md)
 
 MODE=sync
 QUIET=false

@@ -13,8 +13,7 @@ ai-config/
 │   └── structure.md     # this file
 ├── instructions/        # global guidance, linked into $HOME
 │   ├── AGENTS.md        # -> ~/AGENTS.md
-│   ├── OPINIONS.md      # -> ~/OPINIONS.md
-│   └── VOICE.md         # -> ~/VOICE.md
+│   └── OPINIONS.md      # -> ~/OPINIONS.md
 └── skills/              # hierarchical, tool-agnostic skill tree
     ├── engineering/
     ├── meta/            # skills that maintain this repo itself
@@ -32,7 +31,7 @@ Overlays mirror this repo's shape (`skills/`, `instructions/`); this is how priv
 2. **Skills.** Every leaf directory under a layer's `skills/` containing a `SKILL.md` is a skill.
 `status: draft` and `status: deprecated` are skipped (see `docs/conventions.md`).
 Each active skill is symlinked flat into `~/.claude/skills/<name>` and `~/.agents/skills/<name>`.
-3. **Instructions.** Each file in `instructions/` is symlinked into `$HOME` (`~/AGENTS.md`, `~/VOICE.md`, `~/OPINIONS.md`).
+3. **Instructions.** Each file in `instructions/` is symlinked into `$HOME` (`~/AGENTS.md`, `~/OPINIONS.md`).
 If an overlay provides the same filename, the overlay's version wins.
 4. **Pruning.** Symlinks in target dirs that point into a layer's `skills/` tree but no longer correspond to an active skill are removed.
 Sync records every layer it has ever seen in `~/.config/ai-config/known-layers`, so links from a since-deregistered overlay are still pruned.

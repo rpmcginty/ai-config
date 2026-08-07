@@ -1,13 +1,13 @@
 # ai-config
 
-Portable AI agent configuration: skills, instructions, and voice, written tool-agnostically and synced into whatever agent harness is on the machine.
+Portable AI agent configuration: skills and instructions, written tool-agnostically and synced into whatever agent harness is on the machine.
 Optimized for Claude Code today; designed so other tools are an extra sync target, not a rewrite.
 
 ## What lives here
 
 - **`skills/`**: a hierarchical, domain-organized tree of [Agent Skills](https://agentskills.io) (`SKILL.md` directories).
 The hierarchy is for humans; sync flattens it into the flat namespaces tools expect.
-- **`instructions/`**: global guidance linked into `$HOME`: `AGENTS.md` (agent ground rules), `VOICE.md` (how I write), `OPINIONS.md` (engineering viewpoints).
+- **`instructions/`**: global guidance linked into `$HOME`: `AGENTS.md` (agent ground rules), `OPINIONS.md` (engineering viewpoints).
 - **`bin/sync`**: the only moving part.
 Symlinks everything into place, prunes what no longer exists, and diagnoses drift with `bin/sync doctor`.
 - **`docs/`**: [structure and sync mechanics](docs/structure.md), [skill authoring conventions](docs/conventions.md).

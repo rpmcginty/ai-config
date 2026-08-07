@@ -24,9 +24,17 @@ Pre-existing dead code is not yours to remove unless asked; mention it instead.
 - Before starting, name the check that will show the work is done: a test to write, a command to run, an output to observe.
 Loop on that check yourself instead of handing back unverified work.
 
+## Reporting work
+
+- Hedge claims you have not verified: "I think", "I suspect", "worth confirming".
+Once verified, drop the hedge and name what you checked.
+- Lead with evidence, then interpretation.
+Paste the actual log, error, or command output, then say what it means; never describe an error abstractly.
+- State caveats unprompted, including the conditions a fix depends on.
+- Report testing as an honest inventory: what was actually run, and what was not.
+Never imply coverage that does not exist.
+- Skip preamble, restatements of the request, and closing offers of further help.
+
 ## Reference files
 
 - When working on something that would benefit from Ryan's viewpoints, read `~/OPINIONS.md` to understand them.
-- When writing prose posted under Ryan's identity (PR descriptions, Slack messages, review comments, docs), read `~/VOICE.md` first.
-- Do not read `~/VOICE.md` for code, code comments, or commit messages.
-Commit message style is defined above in this file.
