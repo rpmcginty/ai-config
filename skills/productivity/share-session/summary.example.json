@@ -1,0 +1,35 @@
+{
+  "title": "Refining OCSDV-452",
+  "dek": "A cross-examination of the include/exclude filtering design for data sync — ending with three linked Jira stories and a build order.",
+  "eyebrow": "Claude Code · session record",
+  "participant": "Ryan",
+
+  "outcome_heading": "What came out of it",
+  "connector": "blocks",
+  "outcomes": [
+    {
+      "key": "OCSDV-452",
+      "title": "Partial file data transfer: data sync include/exclude filtering",
+      "note": "rewritten — scope, known gaps, no-CDK finding",
+      "link": "https://alleninstitute.atlassian.net/browse/OCSDV-452"
+    },
+    {
+      "key": "OCSDV-453",
+      "title": "Partial file data transfer: demand execution include/exclude filtering",
+      "note": "rewritten — the four-hop field-drop problem"
+    },
+    {
+      "key": "OCSDV-454",
+      "title": "Make use of partial asset data transfer in OCS",
+      "note": "created during the session — child of OCSDV-21"
+    }
+  ],
+
+  "highlight_tools": [
+    "mcp__claude_ai_Atlassian_Rovo__editJiraIssue",
+    "mcp__claude_ai_Atlassian_Rovo__createJiraIssue",
+    "mcp__claude_ai_Atlassian_Rovo__createIssueLink"
+  ],
+  "highlight_label": "wrote to Jira",
+  "highlight_stat": "writes to Jira"
+}
