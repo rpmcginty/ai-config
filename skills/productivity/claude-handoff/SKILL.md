@@ -5,7 +5,7 @@ argument-hint: "What will the next session be used for?"
 disable-model-invocation: true
 status: draft
 upstream: mattpocock/skills@skills/in-progress/claude-handoff
-upstream-commit: 84fdeffd1289cc98dd66fbf1e5e4bc94b1ad4e58
+upstream-commit: a2f9333669ff53db762c87ecda5a15442060a3be
 ---
 
 Write a handoff summary of the current conversation so a fresh agent can continue the work. Instead of saving it, launch a background agent seeded with the summary as its prompt: `claude --bg --name "<descriptive name>" "<handoff summary>"`. It starts in the current working directory and returns immediately; the user manages it with `claude agents`.

@@ -4,7 +4,7 @@ description: Turn the current conversation into a spec and publish it to the pro
 disable-model-invocation: true
 status: stable
 upstream: mattpocock/skills@skills/engineering/to-spec
-upstream-commit: 84fdeffd1289cc98dd66fbf1e5e4bc94b1ad4e58
+upstream-commit: a2f9333669ff53db762c87ecda5a15442060a3be
 ---
 
 This skill takes the current conversation context and codebase understanding and produces a spec. Do NOT interview the user — just synthesize what you already know.

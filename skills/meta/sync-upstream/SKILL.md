@@ -32,6 +32,8 @@ Run from the ai-config repo root (and each overlay that vendors skills).
    - Take the whole upstream skill directory, including harness metadata like `agents/openai.yaml`; this repo is tool-agnostic, so other harnesses' interface files are worth carrying.
    - Keep harness metadata consistent with the frontmatter it mirrors: `disable-model-invocation: true` corresponds to `policy.allow_implicit_invocation: false`.
 7. Set `upstream-commit` to the latest sha, run `bin/sync doctor`, and commit with a message like `sync grill-me from upstream`.
+Copy that sha from the step 3 output rather than retyping it, and confirm it resolves before committing: `gh api "repos/<owner/repo>/commits/<sha>" --jq .sha`.
+An unresolvable `upstream-commit` breaks every later sync of that skill, because step 4 needs it as the merge base — and nothing surfaces the breakage until someone runs `check-vendored.py`.
 
 ## Vendoring a new skill
 
