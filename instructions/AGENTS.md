@@ -5,7 +5,7 @@ Project-level `AGENTS.md` / `CLAUDE.md` files take precedence over anything here
 
 ## General guidelines
 
-- When writing commit messages, never auto-add your agent name as a co-author.
+- Credit AI assistance in commit messages: when an agent wrote or substantially contributed to a commit, end the message with the `Co-Authored-By:` trailer naming that agent (use the exact line the harness provides, if any).
 - Commit messages are plain imperative, lowercase fine: "fix get_version test", "update uv.lock".
 No feat:/fix: prefixes unless the repo requires them.
 - Never manually modify `CHANGELOG.md` files or any files marked as auto-generated.
